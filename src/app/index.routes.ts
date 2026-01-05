@@ -3,8 +3,8 @@ import { AdminRoutes } from "./module/admin/admin.routes";
 
 const routes = express.Router();
 
-routes.get("/health", (req, res) => {
-  res.send("Server is Woring");
+routes.get("/", (req, res) => {
+  res.send("C.Grove Server is Woring");
 });
 
 const moduleRoutes = [

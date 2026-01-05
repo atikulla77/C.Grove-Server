@@ -40,8 +40,12 @@ export class AdminController {
     try {
       const refreshToken = req.cookies.refreshToken;
 
-      if (!refreshToken)
-        return res.status(401).json({ message: "Unauthorized" });
+      if (!refreshToken) {
+        // if refresh token expired
+        res.clearCookie("accessToken");
+        res.clearCookie("refreshToken");
+        res.status(401).json({ message: "Session expired" });
+      }
 
       const decoded = jwt.verify(
         refreshToken,

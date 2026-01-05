@@ -8,7 +8,7 @@ let router = Router();
 // Public
 router.post("/login", AdminController.login);
 router.post("/refresh", AdminController.refresh);
-router.post("/logout", authMiddleware, AdminController.logout);
+router.post("/logout", AdminController.logout);
 
 router.get("/me", authMiddleware, (req, res) => {
   res.status(200).json({
