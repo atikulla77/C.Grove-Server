@@ -5,35 +5,46 @@ import { config } from "../../../shared/configs/env.config";
 
 export class AdminController {
   static async login(req: Request, res: Response) {
-    try {
-      const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-      const { accessToken, refreshToken } = await AdminService.login(
-        email,
-        password
-      );
+    const { accessToken, refreshToken } = await AdminService.login(
+      email,
+      password
+    );
 
-      res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-        maxAge: 15 * 60 * 1000,
-        path: "/",
-      });
+    // Set cookies
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Only secure in production
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 15 * 60 * 1000, // 15 minutes
+      path: "/",
+    });
 
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-        path: "/",
-      });
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: "/",
+    });
 
-      res.status(200).json({ message: "Admin logged in" });
-    } catch (error: any) {
-      res.status(401).json({ message: error.message });
-    }
+    // IMPORTANT: Also return tokens and user data in response
+    res.status(200).json({ 
+      success: true,
+      message: "Admin logged in",
+      accessToken, // Send token in body as well
+      refreshToken,
+    });
+  } catch (error: any) {
+    console.error("Login error:", error);
+    res.status(401).json({ 
+      success: false,
+      message: error.message || "Login failed" 
+    });
   }
+}
 
   // Create REFRESH endpoint
   static async refresh(req: Request, res: Response) {
