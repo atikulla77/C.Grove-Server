@@ -16,23 +16,22 @@ export class AdminController {
         password
       );
 
+      const cookieOptions = {
+        httpOnly: true,
+        secure: true, // REQUIRED on HTTPS
+        sameSite: "none" as const, // REQUIRED for cross-site
+        path: "/", // IMPORTANT
+      };
+
       // Set cookies
       res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production"? ".vercel.app": "",
-        sameSite: "lax",
+        ...cookieOptions,
         maxAge: 15 * 60 * 1000, // 15 minutes
-        path: "/",
       });
 
       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production"? ".vercel.app": "",
-        sameSite: "lax",
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        path: "/",
       });
 
       // ✅ FIXED: Return admin data in response
@@ -60,16 +59,16 @@ export class AdminController {
       if (!refreshToken) {
         res.clearCookie("accessToken");
         res.clearCookie("refreshToken");
-        return res.status(401).json({ 
+        return res.status(401).json({
           success: false,
-          message: "Refresh token missing" 
+          message: "Refresh token missing",
         });
       }
 
-      const decoded = jwt.verify(
-        refreshToken,
-        config.JWT_REFRESH_SECRET
-      ) as { id: string; role: string };
+      const decoded = jwt.verify(refreshToken, config.JWT_REFRESH_SECRET) as {
+        id: string;
+        role: string;
+      };
 
       const accessSignOptions: SignOptions = {
         expiresIn: config.JWT_ACCESS_EXPIRES as SignOptions["expiresIn"],
@@ -81,27 +80,30 @@ export class AdminController {
         accessSignOptions
       );
 
-      res.cookie("accessToken", newAccessToken, {
+      const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production"? ".vercel.app": "",
-        sameSite: "lax",
+        secure: true, // REQUIRED on HTTPS
+        sameSite: "none" as const, // REQUIRED for cross-site
+        path: "/", // IMPORTANT
+      };
+
+      res.cookie("accessToken", newAccessToken, {
+        ...cookieOptions,
         maxAge: 15 * 60 * 1000,
-        path: "/",
       });
 
-      res.status(200).json({ 
+      res.status(200).json({
         success: true,
         message: "Token refreshed",
-        accessToken: newAccessToken 
+        accessToken: newAccessToken,
       });
     } catch (error: any) {
       console.error("Refresh error:", error);
       res.clearCookie("accessToken");
       res.clearCookie("refreshToken");
-      res.status(401).json({ 
+      res.status(401).json({
         success: false,
-        message: "Invalid refresh token" 
+        message: "Invalid refresh token",
       });
     }
   }
@@ -109,28 +111,26 @@ export class AdminController {
   // ✅ FIXED: Logout
   static async logout(req: Request, res: Response) {
     try {
-      res.clearCookie("accessToken", {
+      const cookieOptions = {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production"? ".vercel.app": "",
-        sameSite: "lax",
-        path: "/",
+        secure: true, // REQUIRED on HTTPS
+        sameSite: "none" as const, // REQUIRED for cross-site
+        path: "/", // IMPORTANT
+      };
+      res.clearCookie("accessToken", {
+        ...cookieOptions,
       });
       res.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        domain: process.env.NODE_ENV === "production"? ".vercel.app": "",
-        sameSite: "lax",
-        path: "/",
+        ...cookieOptions,
       });
-      res.status(200).json({ 
+      res.status(200).json({
         success: true,
-        message: "Logged out successfully" 
+        message: "Logged out successfully",
       });
     } catch (error) {
-      res.status(500).json({ 
+      res.status(500).json({
         success: false,
-        message: "Logout failed" 
+        message: "Logout failed",
       });
     }
   }
