@@ -1,3 +1,4 @@
+
 import { Router } from "express";
 import { AdminController } from "./admin.controller";
 import { authMiddleware } from "../../../shared/middlewares/auth.middleware";
@@ -5,24 +6,20 @@ import { superAdminOnly } from "../../../shared/middlewares/superAdmin.middlewar
 
 let router = Router();
 
-// Public
+// Public routes
 router.post("/login", AdminController.login);
 router.post("/refresh", AdminController.refresh);
-router.post("/logout", AdminController.logout);
 
-router.get("/me", authMiddleware, (req, res) => {
-  res.status(200).json({
-    authenticated: true,
-    admin: (req as any).user,
-  });
-});
+// Protected routes (require auth)
+router.get("/me", authMiddleware, AdminController.getMe); // ✅ FIXED
+router.post("/logout", authMiddleware, AdminController.logout); // ✅ FIXED
 
-// Protected
-router.use(authMiddleware, superAdminOnly);
-router.get("/dashboard", (req, res) => {
+// Super admin only routes
+router.get("/dashboard", authMiddleware, superAdminOnly, (req, res) => {
   res.status(200).json({
+    success: true,
     message: "Welcome To Dashboard",
-    user: (req as any).user,
+    admin: (req as any).admin, // ✅ FIXED: should be req.admin not req.user
   });
 });
 
