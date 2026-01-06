@@ -3,47 +3,39 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import routes from "./app/index.routes";
 
-
 const app: Application = express();
 
-// ✅ DEFINE IT FIRST
-// const allowedOrigins = [
-//   "http://localhost:3000",
-//   "http://localhost:8081",
-//   "https://cgrove.vercel.app",
-// ];
+// CORS configuration
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://cgrove.vercel.app",
+];
 
-// app.use(
-//   cors({
-//     origin: (origin, callback) => {
-//       // allow server-to-server, Postman, curl
-//       if (!origin) return callback(null, true);
-
-//       if (allowedOrigins.includes(origin)) {
-//         return callback(null, true);
-//       }
-
-//       return callback(new Error("Not allowed by CORS"));
-//     },
-//     credentials: true,
-//   })
-// );
-
-// // ✅ VERY IMPORTANT for preflight
-// app.options("*", cors());
-
-// 🔥 USE THIS TEMPORARILY
 app.use(
   cors({
-    origin: true,        // ← IMPORTANT
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      
+      // In development, allow all origins
+      if (process.env.NODE_ENV === "development") {
+        return callback(null, true);
+      }
+      
+      // In production, check against whitelist
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
 
-// 🔥 MUST BE BEFORE ROUTES
-app.options("*", cors());
-
-
+// Handle preflight requests for all routes
+// ✅ FIXED: Use proper syntax instead of "*"
+// app.options("/:path(*)", cors());
 
 app.use(express.json());
 app.use(cookieParser());
