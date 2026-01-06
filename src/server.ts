@@ -1,7 +1,7 @@
 import { Server } from "http";
-import { prisma } from "./shared/lib/prisma";
-import { config } from "./shared/configs/env.config";
-import app from "./app";
+import { prisma } from "./shared/lib/prisma.js";
+import { config } from "./shared/configs/env.config.js";
+import app from "./app.js";
 
 let server: Server;
 
