@@ -5,6 +5,7 @@ import routes from "./app/index.routes.js";
 
 const app: Application = express();
 
+
 // Cookie parser FIRST
 app.use(cookieParser());
 
